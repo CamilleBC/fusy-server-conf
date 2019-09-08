@@ -1,0 +1,45 @@
+- name: set vi mode for all readline programs
+  lineinfile:
+    path: ~/.inputrc
+    line: set editing-mode vi
+    state: present
+    create: yes
+    mode: 0644
+
+- name: install base packages
+  package:
+    name:
+    - curl
+    - docker
+    - git
+    state: present
+    autoclean: yes
+  become: yes
+
+- name: install and configure docker-compose
+  block:
+  - name: install docker-compose
+    shell: "curl -L \"https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)\" -o /usr/local/bin/docker-compose"
+    args:
+      creates: "/usr/local/bin/docker-compose"
+    become: yes
+  - name: set docker-compose executable's permissions
+    file:
+      path: /usr/local/bin/docker-compose
+      mode: a+x
+    become: yes
+  - name: install docker-compose bash completion
+    shell: "curl -L https://raw.githubusercontent.com/docker/compose/1.24.1/contrib/completion/bash/docker-compose -o /etc/bash_completion.d/docker-compose"
+    args:
+      creates: "/etc/bash_completion.d/docker-compose"
+    become: yes
+
+- name: install NVM
+  shell: "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash"
+  args:
+    creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+
+- name: install Node
+  shell: "source ~/.nvm/nvm.sh && nvm install 12.10.0"
+  args:
+    executable: /bin/bash

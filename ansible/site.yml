@@ -1,0 +1,4 @@
+- hosts: fusy
+  tasks:
+    - name: install base packages
+      import_tasks: role-base-install.yml
